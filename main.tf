@@ -44,43 +44,87 @@ locals {
 
 #intake files s3 bucket
 resource "aws_s3_bucket" "intake" {
-    bucket = local.intake_bucket
+  bucket = local.intake_bucket
 }
 
 #processed files s3 bucket
 resource "aws_s3_bucket" "processed" {
-    bucket = local.processed_bucket
+  bucket = local.processed_bucket
 }
 
 #archived files s3 bucket
 resource "aws_s3_bucket" "archive" {
-    bucket = local.archive_bucket
+  bucket = local.archive_bucket
 }
 
 #blocking all public access - later uploads will be assigned with CloudFront
 #pab for intake bucket
 resource "aws_s3_bucket_public_access_block" "pab_intake" {
-    bucket = aws_s3_bucket.intake.id
-    block_public_acls = true
-    block_public_policy = true
-    restrict_public_buckets = true
-    ignore_public_acls = true
+  bucket                  = aws_s3_bucket.intake.id
+  block_public_acls       = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+  ignore_public_acls      = true
 }
 
 #pab for processed bucket
 resource "aws_s3_bucket_public_access_block" "pab_processed" {
-    bucket = aws_s3_bucket.processed.id
-    block_public_acls = true
-    block_public_policy = true
-    restrict_public_buckets = true
-    ignore_public_acls = true
+  bucket                  = aws_s3_bucket.processed.id
+  block_public_acls       = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+  ignore_public_acls      = true
 }
 
 #pab for archive bucket
 resource "aws_s3_bucket_public_access_block" "pab_archive" {
-    bucket = aws_s3_bucket.archive.id
-    block_public_acls = true
-    block_public_policy = true
-    restrict_public_buckets = true
-    ignore_public_acls = true
+  bucket                  = aws_s3_bucket.archive.id
+  block_public_acls       = true
+  block_public_policy     = true
+  restrict_public_buckets = true
+  ignore_public_acls      = true
 }
+
+#default encryption (SSE-S3 for now) -- KMS later when var.kms = true
+resource "aws_s3_bucket_server_side_encryption_configuration" "sse_intake" {
+  bucket = aws_s3_bucket.intake.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+    }
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "sse_processed" {
+  bucket = aws_s3_bucket.processed.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+    }
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "sse_archive" {
+  bucket = aws_s3_bucket.archive.id
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+    }
+  }
+}
+
+#possible option to expire raw uploads after 30 days
+resource "aws_s3_bucket_lifecycle_configuration" "lc_intake" {
+  bucket = aws_s3_bucket.intake.id
+  rule {
+    id     = "expire-uploads-30d"
+    status = "Enabled"
+    filter {
+      prefix = "uploads/"
+    }
+    expiration {
+      days = 30
+    }
+  }
+}
+
