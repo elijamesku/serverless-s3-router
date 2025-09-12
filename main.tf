@@ -41,3 +41,16 @@ locals {
   #ex s3-router-archive-curious-dolphin
   archive_bucket = "${var.project}-archive-${local.name_suffix}"
 }
+
+#s3 buckets
+resource "aws_s3_bucket" "intake" {
+    bucket = local.intake_bucket
+}
+
+resource "aws_s3_bucket" "processed" {
+    bucket = local.processed_bucket
+}
+
+resource "aws_s3_bucket" "archive" {
+    bucket = local.archive_bucket
+}
