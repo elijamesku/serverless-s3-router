@@ -128,3 +128,51 @@ resource "aws_s3_bucket_lifecycle_configuration" "lc_intake" {
   }
 }
 
+
+#sqs (events + DLQ)
+resource "aws_sqs_queue" "dlq" {
+  name = "${var.project}-dlq-${local.name_suffix}"
+}
+
+resource "aws_sqs_queue" "queue" {
+  name = "${var.project}-queue-${local.name_suffix}"
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.dlq.arn
+    maxReceiveCount     = 5
+  })
+  visibility_timeout_seconds = 120
+}
+
+#enabling S3 to send messages to SQS
+data "aws_iam_policy_document" "s3_to_aqs" {
+  statement {
+    actions = ["sqs:SendMessage"]
+    principals {
+      type        = "Service"
+      identifiers = ["s3.amazonaws.com"]
+    }
+    resources = [aws_sqs_queue.queue.arn]
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [aws_s3_bucket.intake.arn]
+    }
+  }
+}
+
+resource "aws_sqs_queue_policy" "queue_policy" {
+  queue_url = aws_sqs_queue.queue.id
+  policy    = data.aws_iam_policy_document.s3_to_aqs.json
+}
+
+#notifying SQS on the object created under uploads/
+resource "aws_s3_bucket_notification" "intake_events" {
+  bucket = aws_s3_bucket.intake.id
+  queue {
+    queue_arn     = aws_sqs_queue.queue.arn
+    events        = ["s3:ObjectCreated:*"]
+    filter_prefix = "uploads/"
+  }
+  depends_on = [aws_sqs_queue_policy.queue_policy]
+
+}
