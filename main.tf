@@ -42,20 +42,23 @@ locals {
   archive_bucket = "${var.project}-archive-${local.name_suffix}"
 }
 
-#s3 buckets
+#intake files s3 bucket
 resource "aws_s3_bucket" "intake" {
     bucket = local.intake_bucket
 }
 
+#processed files s3 bucket
 resource "aws_s3_bucket" "processed" {
     bucket = local.processed_bucket
 }
 
+#archived files s3 bucket
 resource "aws_s3_bucket" "archive" {
     bucket = local.archive_bucket
 }
 
 #blocking all public access - later uploads will be assigned with CloudFront
+#pab for intake bucket
 resource "aws_s3_bucket_public_access_block" "pab_intake" {
     bucket = aws_s3_bucket.intake.id
     block_public_acls = true
@@ -64,6 +67,7 @@ resource "aws_s3_bucket_public_access_block" "pab_intake" {
     ignore_public_acls = true
 }
 
+#pab for processed bucket
 resource "aws_s3_bucket_public_access_block" "pab_processed" {
     bucket = aws_s3_bucket.processed.id
     block_public_acls = true
@@ -72,6 +76,7 @@ resource "aws_s3_bucket_public_access_block" "pab_processed" {
     ignore_public_acls = true
 }
 
+#pab for archive bucket
 resource "aws_s3_bucket_public_access_block" "pab_archive" {
     bucket = aws_s3_bucket.archive.id
     block_public_acls = true
