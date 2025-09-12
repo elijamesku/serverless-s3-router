@@ -1,8 +1,10 @@
+#proj name var
 variable "project" {
   type    = string
   default = "s3-router"
 }
 
+#setting default region var
 variable "region" {
   type    = string
   default = "us-east-2"
@@ -14,6 +16,7 @@ variable "kms_sse" {
   default = false
 }
 
+#indication tags
 variable "tags" {
   type = map(string)
   default = {
