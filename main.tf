@@ -36,7 +36,7 @@ locals {
   intake_bucket = "${var.project}-intake-${local.name_suffix}"
 
   #ex s3-router-processed-curious-dolphin
-  processed_bucket = "${var.project}-processed-${local.processed_bucket}"
+  processed_bucket = "${var.project}-processed-${local.name_suffix}"
 
   #ex s3-router-archive-curious-dolphin
   archive_bucket = "${var.project}-archive-${local.name_suffix}"
