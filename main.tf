@@ -279,9 +279,12 @@ resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
 resource "aws_dynamodb_table" "file_logs" {
   name         = "${var.project}-filelogs-${local.name_suffix}"
   billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "pk"
-  range_key    = "sk"
 
+  # Primary key
+  hash_key  = "pk"
+  range_key = "sk"
+
+  # Declare ALL attributes used by keys and GSIs
   attribute {
     name = "pk"
     type = "S"
@@ -292,6 +295,22 @@ resource "aws_dynamodb_table" "file_logs" {
     type = "S"
   }
 
+  attribute {
+    name = "status"
+    type = "S"
+  }
+
+  attribute {
+    name = "client"
+    type = "S"
+  }
+
+  attribute {
+    name = "ts"
+    type = "S"
+  }
+
+  # GSI: query by status sorted by timestamp
   global_secondary_index {
     name            = "status-index"
     hash_key        = "status"
@@ -299,14 +318,15 @@ resource "aws_dynamodb_table" "file_logs" {
     projection_type = "ALL"
   }
 
+  # GSI: query by client, sorted by timestamp
   global_secondary_index {
     name            = "client-index"
     hash_key        = "client"
     range_key       = "ts"
     projection_type = "ALL"
   }
-
 }
+
 
 #API Gateway
 resource "aws_apigatewayv2_api" "api" {
