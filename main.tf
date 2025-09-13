@@ -215,17 +215,17 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 
   statement {
-    sid = "DDB"
-    actions = ["dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:GetItem","dynamodb:Query"]
+    sid     = "DDB"
+    actions = ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:GetItem", "dynamodb:Query"]
     resources = [
-        aws_dynamodb_table.file_logs.arn,
-        "${aws_dynamodb_table.file_log.arn}/index/*"
+      aws_dynamodb_table.file_logs.arn,
+      "${aws_dynamodb_table.file_log.arn}/index/*"
     ]
   }
 
   statement {
-    sid = "SQSSend"
-    actions = ["sqs:SendMessage"]
+    sid       = "SQSSend"
+    actions   = ["sqs:SendMessage"]
     resources = [aws_sqs_queue.queue.arn]
   }
 }
@@ -309,5 +309,109 @@ resource "aws_dynamodb_table" "file_logs" {
 
 #API Gateway
 resource "aws_apigatewayv2_api" "api" {
-  
+  name          = "${var.project}-api-${local.name_suffix}"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "api_stage" {
+  api_id      = aws_apigatewayv2_api.api.id
+  name        = "prod"
+  auto_deploy = true
+}
+
+#presigner lambda
+resource "aws_lambda_function" "presigner" {
+  function_name    = "${var.project}-presigner-${local.name_suffix}"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  handler          = "presign.main"
+  runtime          = "python3.11"
+  timeout          = 10
+  environment {
+    variables = {
+      INTAKE_BUCKET  = aws_s3_bucket.intake.bucket
+      API_SHARED_KEY = var.upload_api_key
+    }
+  }
+}
+
+resource "aws_apigatewayv2_integration" "presign_integ" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.presigner.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "presign_route" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /upload-url"
+  target    = "integrations/${aws_apigatewayv2_integration.presign_integ.id}"
+}
+
+resource "aws_lambda_permission" "api_invoke_presign" {
+  statement_id  = "AllowAPIGatewayInvokePresign"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.presigner.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
+}
+
+#Ops Lambda (list/retry/restore/force-route)
+resource "aws_lambda_function" "ops" {
+  function_name    = "${var.project}-ops-${local.name_suffix}"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  handler          = "ops.main"
+  runtime          = "python3.11"
+  timeout          = 30
+  environment {
+    variables = {
+      LOG_TABLE        = aws_dynamodb_table.file_logs.name
+      INTAKE_BUCKET    = aws_s3_bucket.intake.bucket
+      PROCESSED_BUCKET = aws_s3_bucket.processed.bucket
+      ARCHIVE_BUCKET   = aws_s3_bucket.archive.bucket
+      QUEUE_URL        = aws_sqs_queue.queue.id
+      API_SHARED_KEY   = var.upload_api_key
+    }
+  }
+}
+
+resource "aws_apigatewayv2_integration" "ops_integ" {
+  api_id                 = aws_apigatewayv2_api.api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.ops.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "ops_list" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "GET /logs"
+  target    = "integrations/${aws_apigatewayv2_integration.ops_integ.id}"
+}
+resource "aws_apigatewayv2_route" "ops_retry" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /retry"
+  target    = "integrations/${aws_apigatewayv2_integration.ops_integ.id}"
+}
+
+resource "aws_apigatewayv2_route" "ops_restore" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /restore"
+  target    = "integrations/${aws_apigatewayv2_integration.ops_integ.id}"
+}
+
+resource "aws_apigatewayv2_route" "ops_force" {
+  api_id    = aws_apigatewayv2_api.api.id
+  route_key = "POST /force-route"
+  target    = "integrations/${aws_apigatewayv2_integration.ops_integ.id}"
+}
+
+resource "aws_lambda_permission" "api_invoke_ops" {
+  statement_id  = "AllowAPIGatewayInvokeOps"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.ops.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
