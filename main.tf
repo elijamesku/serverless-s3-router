@@ -219,7 +219,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = ["dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:GetItem", "dynamodb:Query"]
     resources = [
       aws_dynamodb_table.file_logs.arn,
-      "${aws_dynamodb_table.file_log.arn}/index/*"
+      "${aws_dynamodb_table.file_logs.arn}/index/*"
     ]
   }
 
@@ -418,7 +418,7 @@ resource "aws_lambda_permission" "api_invoke_ops" {
 }
 
 #cloudfront + oac
-resource "aws_cloudfront_origin_access_contrl" "oac" {
+resource "aws_cloudfront_origin_access_control" "oac" {
   name                              = "${var.project}-oac-${local.name_suffix}"
   description                       = "OAC for processed bucket"
   origin_access_control_origin_type = "s3"
