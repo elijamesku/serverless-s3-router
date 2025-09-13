@@ -39,7 +39,7 @@ def route_object(src_bucket, key):
     current_prefix = f"clients/{client}/{doctype}/current/"
     dest_key = current_prefix + fname
 
-    # If a current file exists, archive it under date folder
+    # If file exists then archive it under date folder
     prior = find_any(current_prefix)
     if prior:
         prior_name = prior["Key"].split("/")[-1]
