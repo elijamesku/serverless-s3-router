@@ -261,6 +261,7 @@ resource "aws_lambda_function" "router" {
     variables = {
       PROCESSED_BUCKET = aws_s3_bucket.processed.bucket
       ARCHIVE_BUCKET   = aws_s3_bucket.archive.bucket
+      LOG_TABLE        = aws_dynamodb_table.file_logs.name
     }
   }
   tags = var.tags
