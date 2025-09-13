@@ -191,5 +191,25 @@ resource "aws_iam_role" "lambda_role" {
     }]
   })
   tags = var.tags
+}
+
+data "aws_iam_policy_document" "lambda_policy" {
+  statement {
+    sid       = "logs"
+    actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+    resources = ["arn:aws:logs:*:*:*"]
+  }
+  statement {
+    sid     = "S3RW"
+    actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:CopyObject", "s3:ListBucket", "s3:GetObjectVersion"]
+    resources = [
+      aws_s3_bucket.intake.arn, "${aws_s3_bucket.intake.arn}/*",
+      aws_s3_bucket.processed.arn, "${aws_s3_bucket.processed.arn}/*",
+      aws_s3_bucket.archive.arn, "${aws_s3_bucket.archive.arn}/*"
+    ]
+  }
+  statement {
+
+  }
 
 }
