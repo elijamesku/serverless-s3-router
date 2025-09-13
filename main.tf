@@ -90,7 +90,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "sse_intake" {
   bucket = aws_s3_bucket.intake.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+      sse_algorithm = var.kms_sse ? "aws:kms" : "AES256"
     }
   }
 }
@@ -99,7 +99,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "sse_processed" {
   bucket = aws_s3_bucket.processed.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+      sse_algorithm = var.kms_sse ? "aws:kms" : "AES256"
     }
   }
 }
@@ -108,7 +108,7 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "sse_archive" {
   bucket = aws_s3_bucket.archive.id
   rule {
     apply_server_side_encryption_by_default {
-      sse_algorithm = var.kms_sse ? "aws:kms" : AES256
+      sse_algorithm = var.kms_sse ? "aws:kms" : "AES256"
     }
   }
 }
@@ -211,7 +211,7 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     sid       = "SQSRW"
     actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes"]
-    resources = [aws_sqs_queue.arn]
+    resources = [aws_sqs_queue.queue.arn]
   }
 }
 
@@ -236,10 +236,10 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "router" {
   function_name    = "${var.project}-router-${local.name_suffix}"
   role             = aws_iam_role.lambda_role.arn
-  filename         = data.archive_file.lambda_role.arn
+  filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
   handler          = "handler.main"
-  runtime          = "pythin3.11"
+  runtime          = "python3.11"
   timeout          = 60
   memory_size      = 512
   environment {
