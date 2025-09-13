@@ -243,9 +243,18 @@ resource "aws_lambda_function" "router" {
   timeout          = 60
   memory_size      = 512
   environment {
-
+    variables = {
+      PROCESSED_BUCKET = aws_s3_bucket.processed.bucket
+      ARCHIVE_BUCKET   = aws_s3_bucket.archive.bucket
+    }
   }
-
-
-
+  tags = var.tags
 }
+
+resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
+  event_source_arn                   = aws_sqs_queue.queue.arn
+  function_name                      = aws_lambda_function.router.arn
+  batch_size                         = 5
+  maximum_batching_window_in_seconds = 10
+}
+
