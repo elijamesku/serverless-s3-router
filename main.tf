@@ -415,3 +415,66 @@ resource "aws_lambda_permission" "api_invoke_ops" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*"
 }
+
+#cloudfront + oac
+resource "aws_cloudfront_origin_access_contrl" "oac" {
+  name                              = "${var.project}-oac-${local.name_suffix}"
+  description                       = "OAC for processed bucket"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                  = "sigv4"
+}
+
+resource "aws_cloudfront_distribution" "processed_cdn" {
+  enabled = true
+  origin {
+    domain_name              = aws_s3_bucket.processed.bucket_regional_domain_name
+    origin_id                = "processed-s3"
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
+  }
+
+  default_cache_behavior {
+    target_origin_id       = "processed-s3"
+    viewer_protocol_policy = "redirect-to-https"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
+    compress               = true
+    forwarded_values {
+      query_string = false
+      cookies {
+        forward = "none"
+      }
+    }
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+}
+
+# Only allow CloudFront to read the processed bucket
+data "aws_iam_policy_document" "processed_policy" {
+  statement {
+    sid       = "AllowCloudFrontReadWithOAC"
+    actions   = ["s3:GetObject"]
+    resources = ["${aws_s3_bucket.processed.arn}/*"]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "AWS:SourceArn"
+      values   = [aws_cloudfront_distribution.processed_cdn.arn]
+    }
+  }
+}
+resource "aws_s3_bucket_policy" "processed_bp" {
+  bucket = aws_s3_bucket.processed.id
+  policy = data.aws_iam_policy_document.processed_policy.json
+}
