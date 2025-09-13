@@ -181,7 +181,7 @@ resource "aws_s3_bucket_notification" "intake_events" {
 resource "aws_iam_role" "lambda_role" {
   name = "${var.project}-lambda-${local.name_suffix}"
   assume_role_policy = jsonencode({
-    version = "2012-10-17",
+    Version = "2012-10-17",
     Statement = [
       {
         Effect    = "Allow"
