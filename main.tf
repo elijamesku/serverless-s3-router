@@ -182,13 +182,13 @@ resource "aws_iam_role" "lambda_role" {
   name = "${var.project}-lambda-${local.name_suffix}"
   assume_role_policy = jsonencode({
     version = "2012-10-17",
-    Statement = [{
-      Effect = "Allow"
-      Principal = {
-        Service = "lambda.amazonaws.com"
+    Statement = [
+      {
+        Effect    = "Allow"
+        Principal = { Service = "lambda.amazonaws.com" }
+        Action    = "sts:AssumeRole"
       }
-      action = "sts:AssumeRole"
-    }]
+    ]
   })
   tags = var.tags
 }
