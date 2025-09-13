@@ -258,3 +258,36 @@ resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
   maximum_batching_window_in_seconds = 10
 }
 
+
+#dynamo db table logs
+resource "aws_dynamodb_table" "file_logs" {
+  name         = "${var.project}-filelogs-${local.name_suffix}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "pk"
+  range_key    = "sk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+
+  attribute {
+    name = "sk"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "status-index"
+    hash_key        = "status"
+    range_key       = "ts"
+    projection_type = "ALL"
+  }
+
+  global_secondary_index {
+    name            = "client-index"
+    hash_key        = "client"
+    range_key       = "ts"
+    projection_type = "ALL"
+  }
+
+}
