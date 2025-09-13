@@ -232,6 +232,7 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/lambda.zip"
 }
 
+#lambda function 
 resource "aws_lambda_function" "router" {
   function_name    = "${var.project}-router-${local.name_suffix}"
   role             = aws_iam_role.lambda_role.arn
