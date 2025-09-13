@@ -209,7 +209,25 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
   }
   statement {
-
+    sid       = "SQSRW"
+    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes"]
+    resources = [aws_sqs_queue.arn]
   }
+}
 
+resource "aws_iam_policy" "lambda_policy" {
+  name   = "${var.project}-lambda-${local.name_suffix}"
+  policy = data.aws_iam_policy_document.lambda_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_policy.arn
+}
+
+#packaging everything in /lambda as a zip
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_dir  = "${path.module}/lambda"
+  output_path = "${path.module}/lambda.zip"
 }
