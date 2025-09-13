@@ -26,8 +26,8 @@ variable "tags" {
 }
 
 variable "upload_api_key" {
-    description = "Shared secret sent in x-api-key for presign endpoints"
-    type = string
-    sensitive = true
-    default = "REPLACE_ME"
+  description = "Shared secret sent in x-api-key for presign endpoints"
+  type        = string
+  sensitive   = true
+  default     = "REPLACE_ME"
 }
