@@ -176,3 +176,20 @@ resource "aws_s3_bucket_notification" "intake_events" {
   depends_on = [aws_sqs_queue_policy.queue_policy]
 
 }
+
+#lamda (router)
+resource "aws_iam_role" "lambda_role" {
+  name = "${var.project}-lambda-${local.name_suffix}"
+  assume_role_policy = jsonencode({
+    version = "2012-10-17",
+    statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+      action = "sts:AssumeRole"
+    }]
+  })
+  tags = var.tags
+
+}
