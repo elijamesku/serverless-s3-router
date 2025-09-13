@@ -213,6 +213,21 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes"]
     resources = [aws_sqs_queue.queue.arn]
   }
+
+  statement {
+    sid = "DDB"
+    actions = ["dynamodb:PutItem","dynamodb:UpdateItem","dynamodb:GetItem","dynamodb:Query"]
+    resources = [
+        aws_dynamodb_table.file_logs.arn,
+        "${aws_dynamodb_table.file_log.arn}/index/*"
+    ]
+  }
+
+  statement {
+    sid = "SQSSend"
+    actions = ["sqs:SendMessage"]
+    resources = [aws_sqs_queue.queue.arn]
+  }
 }
 
 resource "aws_iam_policy" "lambda_policy" {
@@ -290,4 +305,9 @@ resource "aws_dynamodb_table" "file_logs" {
     projection_type = "ALL"
   }
 
+}
+
+#API Gateway
+resource "aws_apigatewayv2_api" "api" {
+  
 }
