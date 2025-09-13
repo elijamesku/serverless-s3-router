@@ -210,7 +210,7 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
   statement {
     sid       = "SQSRW"
-    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes"]
+    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes", "sqs:ChangeMessageVisibility"]
     resources = [aws_sqs_queue.queue.arn]
   }
 
@@ -272,6 +272,10 @@ resource "aws_lambda_event_source_mapping" "sqs_to_lambda" {
   function_name                      = aws_lambda_function.router.arn
   batch_size                         = 5
   maximum_batching_window_in_seconds = 10
+
+  depends_on = [
+    aws_iam_role_policy_attachment.attach
+  ]
 }
 
 
