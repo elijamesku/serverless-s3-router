@@ -231,3 +231,20 @@ data "archive_file" "lambda_zip" {
   source_dir  = "${path.module}/lambda"
   output_path = "${path.module}/lambda.zip"
 }
+
+resource "aws_lambda_function" "router" {
+  function_name    = "${var.project}-router-${local.name_suffix}"
+  role             = aws_iam_role.lambda_role.arn
+  filename         = data.archive_file.lambda_role.arn
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  handler          = "handler.main"
+  runtime          = "pythin3.11"
+  timeout          = 60
+  memory_size      = 512
+  environment {
+
+  }
+
+
+
+}
