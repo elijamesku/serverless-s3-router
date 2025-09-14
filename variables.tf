@@ -29,5 +29,5 @@ variable "upload_api_key" {
   description = "Shared secret sent in x-api-key for presign endpoints"
   type        = string
   sensitive   = true
-  default     = "REPLACE_ME"
+  default     = "super-secret-key-123"
 }
