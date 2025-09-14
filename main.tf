@@ -242,7 +242,7 @@ data "aws_iam_policy_document" "lambda_policy" {
   }
 }
 
-
+#iam policy for lambda
 resource "aws_iam_policy" "lambda_policy" {
   name   = "${var.project}-lambda-${local.name_suffix}"
   policy = data.aws_iam_policy_document.lambda_policy.json
@@ -297,11 +297,11 @@ resource "aws_dynamodb_table" "file_logs" {
   name         = "${var.project}-filelogs-${local.name_suffix}"
   billing_mode = "PAY_PER_REQUEST"
 
-  #Primary key
+  #primary key
   hash_key  = "pk"
   range_key = "sk"
 
-  #Declare ALL attributes used by keys and GSIs
+  #declare ALL attributes used by keys and GSIs
   attribute {
     name = "pk"
     type = "S"
@@ -360,6 +360,7 @@ resource "aws_apigatewayv2_api" "api" {
   }
 }
 
+#stage api gateway
 resource "aws_apigatewayv2_stage" "api_stage" {
   api_id      = aws_apigatewayv2_api.api.id
   name        = "prod"
@@ -504,7 +505,7 @@ resource "aws_cloudfront_distribution" "processed_cdn" {
   }
 }
 
-#Only allow CloudFront to read the processed bucket
+#Only allow cloudFront to read the processed bucket
 data "aws_iam_policy_document" "processed_policy" {
   statement {
     sid       = "AllowCloudFrontReadWithOAC"
