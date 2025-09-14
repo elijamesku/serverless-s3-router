@@ -3,6 +3,7 @@ import os, json, boto3
 INTAKE = os.environ["INTAKE_BUCKET"]
 API_KEY = os.environ.get("API_SHARED_KEY")
 s3 = boto3.client("s3")
+CORS = {"access-control-allow-origin":"*", "access-control-allow-headers":"x-api-key,content-type"}
 
 def main(event, _):
     # basic header auth
@@ -25,8 +26,9 @@ def main(event, _):
         )
         return {
             "statusCode": 200,
-            "headers": {"content-type":"application/json"},
+            "headers": {"content-type":"application/json", **CORS},
             "body": json.dumps({"bucket": INTAKE, "key": key, "url": url, "expiresSec": 900})
         }
+        
     except Exception as e:
-        return {"statusCode": 500, "body": str(e)}
+        return {"statusCode": 401, "headers": CORS, "body": "unauthorized"}
