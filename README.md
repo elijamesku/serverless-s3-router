@@ -49,4 +49,28 @@ This project implements a serverless pipeline for securely ingesting client file
   - Serverless architecture with pay-per-use pricing
   - S3 lifecycle policies for expiring old raw uploads
 
+## Screenshots
+![Screenshot](assets/screenshot-2025-09-13-at-7.59.48 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.11.11 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.00.10 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-7.53.25 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-7.53.57 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-7.57.37 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.01.29 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.02.03 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.02.28 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.05.16 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.11.11 pm.png)
+
+![Screenshot](assets/screenshot-2025-09-13-at-8.11.22 pm.png)
 
