@@ -25,9 +25,10 @@ variable "tags" {
   }
 }
 
+#api key upload
 variable "upload_api_key" {
   description = "Shared secret sent in x-api-key for presign endpoints"
   type        = string
   sensitive   = true
-  default     = "super-secret-key-123"
+  default     = "-------"
 }
