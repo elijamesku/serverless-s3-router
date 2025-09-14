@@ -1,6 +1,6 @@
 # Serverless S3 Router
 
-This project implements a serverless pipeline for securely ingesting client files, processing them into a structured S3 layout, archiving prior versions, and exposing them through a CloudFront distribution. It uses Terraform for infrastructure as code, AWS Lambda for file routing, and API Gateway for presigned URL generation.
+This project implements a serverless pipeline for securely ingesting client files, processing them into a structured S3 layout, archiving prior versions, and exposing them through a CloudFront distribution. It uses Terraform for infrastructure as code, AWS Lambda for file routing, and API Gateway for presigned URL generation
 
 
 ## Architecture
@@ -76,4 +76,3 @@ This project implements a serverless pipeline for securely ingesting client file
 ![Screenshot](assets/screenshot-2025-09-13-at-8.11.11 pm.png)
 
 ![Screenshot](assets/screenshot-2025-09-13-at-8.11.22 pm.png)
-
