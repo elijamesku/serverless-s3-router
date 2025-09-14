@@ -349,6 +349,15 @@ resource "aws_dynamodb_table" "file_logs" {
 resource "aws_apigatewayv2_api" "api" {
   name          = "${var.project}-api-${local.name_suffix}"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins     = ["*"]
+    allow_methods     = ["OPTIONS", "GET", "POST"]
+    allow_headers     = ["content-type", "x-api-key"]
+    expose_headers    = []
+    max_age           = 300
+    allow_credentials = false
+  }
 }
 
 resource "aws_apigatewayv2_stage" "api_stage" {
@@ -515,4 +524,15 @@ data "aws_iam_policy_document" "processed_policy" {
 resource "aws_s3_bucket_policy" "processed_bp" {
   bucket = aws_s3_bucket.processed.id
   policy = data.aws_iam_policy_document.processed_policy.json
+}
+
+resource "aws_s3_bucket_cors_configuration" "intake_cors" {
+  bucket = aws_s3_bucket.intake.id
+  cors_rule {
+    allowed_methods = ["PUT", "HEAD"]
+    allowed_origins = ["*"]
+    allowed_headers = ["*"]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 300
+  }
 }

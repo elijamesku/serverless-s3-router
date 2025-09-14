@@ -10,8 +10,11 @@ ARCHIVE = os.environ["ARCHIVE_BUCKET"]
 QUEUE   = os.environ["QUEUE_URL"]
 API_KEY = os.environ.get("API_SHARED_KEY")
 
-def ok(data, code=200): return {"statusCode": code, "headers":{"content-type":"application/json"}, "body": json.dumps(data)}
-def fail(code, msg):    return {"statusCode": code, "body": msg}
+CORS = {"access-control-allow-origin":"*", "access-control-allow-headers":"x-api-key,content-type"}
+
+def ok(data, code=200): return {"statusCode": code, "headers": {"content-type":"application/json", **CORS}, "body": json.dumps(data)}
+def fail(code, msg):    return {"statusCode": code, "headers": CORS, "body": msg}
+
 
 def authed(headers):
     return (API_KEY is None) or (headers.get("x-api-key") == API_KEY)
