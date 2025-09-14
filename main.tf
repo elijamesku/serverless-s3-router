@@ -195,22 +195,33 @@ resource "aws_iam_role" "lambda_role" {
 
 data "aws_iam_policy_document" "lambda_policy" {
   statement {
-    sid       = "logs"
+    sid       = "Logs"
     actions   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
     resources = ["arn:aws:logs:*:*:*"]
   }
+
   statement {
-    sid     = "S3RW"
-    actions = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:CopyObject", "s3:ListBucket", "s3:GetObjectVersion"]
+    sid = "S3RW"
+    actions = [
+      "s3:GetObject", "s3:PutObject", "s3:DeleteObject",
+      "s3:CopyObject", "s3:ListBucket", "s3:GetObjectVersion"
+    ]
     resources = [
       aws_s3_bucket.intake.arn, "${aws_s3_bucket.intake.arn}/*",
       aws_s3_bucket.processed.arn, "${aws_s3_bucket.processed.arn}/*",
       aws_s3_bucket.archive.arn, "${aws_s3_bucket.archive.arn}/*"
     ]
   }
+
+  # SQS permissions for event source mapping
   statement {
-    sid       = "SQSRW"
-    actions   = ["sqs:ReceiveMessage", "sqs:DeleteMessage", "sqs:GetQueueAtrributes", "sqs:ChangeMessageVisibility"]
+    sid = "SQSRW"
+    actions = [
+      "sqs:ReceiveMessage",
+      "sqs:DeleteMessage",
+      "sqs:GetQueueAttributes",
+      "sqs:ChangeMessageVisibility"
+    ]
     resources = [aws_sqs_queue.queue.arn]
   }
 
@@ -223,12 +234,14 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
   }
 
+  # For the ops Lambda to enqueue retries
   statement {
     sid       = "SQSSend"
     actions   = ["sqs:SendMessage"]
     resources = [aws_sqs_queue.queue.arn]
   }
 }
+
 
 resource "aws_iam_policy" "lambda_policy" {
   name   = "${var.project}-lambda-${local.name_suffix}"
