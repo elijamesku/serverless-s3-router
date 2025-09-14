@@ -50,6 +50,8 @@ This project implements a serverless pipeline for securely ingesting client file
   - S3 lifecycle policies for expiring old raw uploads
 
 ## Screenshots
+
+### Buckets and Uploads
 ![Screenshot](assets/screenshot-2025-09-13-at-7.59.48 pm.png)
 
 ![Screenshot](assets/screenshot-2025-09-13-at-8.11.11 pm.png)
