@@ -213,7 +213,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
   }
 
-  # SQS permissions for event source mapping
+  #SQS permissions for event source mapping
   statement {
     sid = "SQSRW"
     actions = [
@@ -234,7 +234,7 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
   }
 
-  # For the ops Lambda to enqueue retries
+  #for the ops Lambda to enqueue retries
   statement {
     sid       = "SQSSend"
     actions   = ["sqs:SendMessage"]
@@ -297,11 +297,11 @@ resource "aws_dynamodb_table" "file_logs" {
   name         = "${var.project}-filelogs-${local.name_suffix}"
   billing_mode = "PAY_PER_REQUEST"
 
-  # Primary key
+  #Primary key
   hash_key  = "pk"
   range_key = "sk"
 
-  # Declare ALL attributes used by keys and GSIs
+  #Declare ALL attributes used by keys and GSIs
   attribute {
     name = "pk"
     type = "S"
@@ -327,7 +327,7 @@ resource "aws_dynamodb_table" "file_logs" {
     type = "S"
   }
 
-  # GSI: query by status sorted by timestamp
+  #GSI: query by status sorted by timestamp
   global_secondary_index {
     name            = "status-index"
     hash_key        = "status"
@@ -335,7 +335,7 @@ resource "aws_dynamodb_table" "file_logs" {
     projection_type = "ALL"
   }
 
-  # GSI: query by client, sorted by timestamp
+  #GSI: query by client, sorted by timestamp
   global_secondary_index {
     name            = "client-index"
     hash_key        = "client"
@@ -504,7 +504,7 @@ resource "aws_cloudfront_distribution" "processed_cdn" {
   }
 }
 
-# Only allow CloudFront to read the processed bucket
+#Only allow CloudFront to read the processed bucket
 data "aws_iam_policy_document" "processed_policy" {
   statement {
     sid       = "AllowCloudFrontReadWithOAC"
