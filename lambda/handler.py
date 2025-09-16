@@ -1,9 +1,18 @@
+# reading environment variables - handling json request/response bodies and using the aws sdk for python for s3
 import os, json, urllib.parse, boto3, datetime
+
+# date stamps and epoch seconds for logging purposes
 import time
 
+# setting up the dynamodb client
+# log table - deploy without ddb during testing
 ddb = boto3.client("dynamodb")
 LOG_TABLE = os.environ.get("LOG_TABLE")
 
+# the purpose of this is to append a record to ddb as an immutable event log
+# pk = partition key --  the source object s3://{bucket}/{key} groups all of the events per uploaded file
+# sk = sort key -- date string (yyyy-mm-dd) from today() -- all events for the same day share the same sk
+# ts = server time when log was written 
 def put_log(pk, sk, **fields):
     if not LOG_TABLE: return
     item = {"pk":{"S":pk}, "sk":{"S":sk}, "ts":{"S":str(int(time.time()))}}
@@ -21,14 +30,16 @@ def classify_doc_type(name: str) -> str:
     n = name.lower()
     if "activity" in n: return "daily-activity"
     if "balance"  in n: return "daily-balance"
-    
-    return "daily-activity"  # default bucket if unknown
+
+    #default bucket if the bucket is unknown
+    return "daily-activity" 
 
 def today():
     return datetime.datetime.utcnow().strftime("%Y-%m-%d")
 
 def main(event, context):
-    # SQS batch with embedded S3 events
+    
+    #SQS batch with embedded S3 events
     for rec in event.get("Records", []):
         body = json.loads(rec["body"])
         for r in body.get("Records", []):
@@ -45,7 +56,8 @@ def route_object(src_bucket: str, key: str) -> None:
     Promotes to:   processed/clients/<client>/<doc_type>/current/<filename>
     Archives old:  archive/  clients/<client>/<doc_type>/<YYYY-MM-DD>/<oldname>
     """
-    # Validate + parse
+
+    #validate + parse
     parts = key.split("/", 2)
     if len(parts) < 3 or parts[0] != "uploads":
         print(f"Skipping non-upload key: {key}")
@@ -63,26 +75,28 @@ def route_object(src_bucket: str, key: str) -> None:
     try:
         put_log(pk, today(), status="RECEIVED", client=client, doc_type=doctype, src_bucket=src_bucket, src_key=key)
     except Exception as _:
-        pass  # logging should never break routing
+        pass 
 
     try:
-        # If a current file exists (any name) archive it first
+        #if a current file exists archive it first
         prior = find_any(current_prefix)
         if prior:
             prior_key  = prior["Key"]
-            # Avoiding archiving the same object if it already has the exact dest key
+
+            #avoiding archiving the same object if it already has the exact dest key
             if prior_key != dest_key:
                 prior_name = prior_key.rsplit("/", 1)[-1]
                 archive_key = f"clients/{client}/{doctype}/{today()}/{prior_name}"
                 put_log(pk, today(), status="ARCHIVING", client=client, doc_type=doctype, prior=prior_key, archive=archive_key)
                 copy_then_delete(PROCESSED, prior_key, ARCHIVE, archive_key)
 
-        # Promote new upload into "current"
+        #promote new upload into "current"
         copy_then_delete(src_bucket, key, PROCESSED, dest_key)
 
         put_log(pk, today(), status="PROCESSED", client=client, doc_type=doctype, dest=f"s3://{PROCESSED}/{dest_key}")
     except Exception as e:
-        # Best-effort failure log, then re-raise so SQS/Lambda retry semantics kick in
+
+        #best effort failure log, then re-raise so SQS/Lambda retry semantics kick in
         try:
             put_log(pk, today(), status="FAILED", client=client, doc_type=doctype, error=str(e))
         except Exception:
