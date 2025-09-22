@@ -537,14 +537,3 @@ resource "aws_s3_bucket_cors_configuration" "intake_cors" {
     max_age_seconds = 300
   }
 }
-
-resource "aws_s3_bucket_cors_configuration" "intake_cors" {
-  bucket = aws_s3_bucket.intake.id
-  cors_rule {
-    allowed_methods = ["PUT", "HEAD"]
-    allowed_origins = ["*"]
-    allowed_headers = ["*"]
-    expose_headers  = ["ETag"]
-    max_age_seconds = 300
-  }
-}
