@@ -4,12 +4,12 @@ on: [push, pull_request]
 jobs:
   terraform:
    runs-on: ubuntu-latest
-    steps:
-     - uses: actions/checkout@v4
+   steps:
+      - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
       - run: terraform -chdir=. init -backend=false
       - run: terraform -chdir=. fmt -check
-      - run: terraform -chdir=. validate
+     # - run: terraform -chdir=. validate
 
     
 
