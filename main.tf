@@ -27,7 +27,7 @@ resource "random_pet" "suffix" {
   length = 2
 }
 
-#defining named values // var.project reference > variables.tf line 1
+#defining named values // var.project reference > variables.tf line 1 -- s3-router
 locals {
   #ex curious-dolphin
   name_suffix = random_pet.suffix.id
