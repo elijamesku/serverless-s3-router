@@ -1,3 +1,10 @@
+# API for logs, retries, and restores
+# Exposes routes (when fronted by API Gateway HTTP API):
+#   GET  /logs?client=<id> | /logs?status=<STATE>   >> list recent log items from DynamoDB
+#   POST /retry    { bucket, key }                  >> push a faux S3 event to SQS to reprocess an object
+#   POST /restore  { client, doc_type, date, filename, retry? } >> copy from archive - intake; optional re-enqueue
+#   POST /force-route { key }                       >> re-enqueue a key that already lives in intake
+# Auth: requires header x-api-key == API_SHARED_KEY (if API_SHARED_KEY is set)
 import os, json, boto3
 
 ddb = boto3.client("dynamodb")
