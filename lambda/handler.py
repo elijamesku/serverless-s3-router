@@ -22,7 +22,7 @@ def put_log(pk, sk, **fields):
         item[k] = {"S": str(v)}
     ddb.put_item(TableName=LOG_TABLE, Item=item)
 
-# s3 client and required environment variables 
+#s3 client and required environment variables 
 s3 = boto3.client("s3")
 PROCESSED = os.environ["PROCESSED_BUCKET"]
 ARCHIVE   = os.environ["ARCHIVE_BUCKET"]
