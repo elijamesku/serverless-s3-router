@@ -22,10 +22,11 @@ CORS = {"access-control-allow-origin":"*", "access-control-allow-headers":"x-api
 def ok(data, code=200): return {"statusCode": code, "headers": {"content-type":"application/json", **CORS}, "body": json.dumps(data)}
 def fail(code, msg):    return {"statusCode": code, "headers": CORS, "body": msg}
 
-
+# headers 
 def authed(headers):
     return (API_KEY is None) or (headers.get("x-api-key") == API_KEY)
 
+# ddb query with logs
 def list_logs(params):
     if params and "client" in params:
         resp = ddb.query(
