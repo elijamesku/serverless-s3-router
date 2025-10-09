@@ -522,11 +522,14 @@ data "aws_iam_policy_document" "processed_policy" {
     }
   }
 }
+
+# bucket policy
 resource "aws_s3_bucket_policy" "processed_bp" {
   bucket = aws_s3_bucket.processed.id
   policy = data.aws_iam_policy_document.processed_policy.json
 }
 
+# cors configuration
 resource "aws_s3_bucket_cors_configuration" "intake_cors" {
   bucket = aws_s3_bucket.intake.id
   cors_rule {
