@@ -16,7 +16,6 @@ terraform {
     }
   }
 }
-
 #reference to variables.tf line 7
 provider "aws" {
   region = var.region
