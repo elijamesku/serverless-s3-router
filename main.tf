@@ -539,5 +539,3 @@ resource "aws_s3_bucket_cors_configuration" "intake_cors" {
     max_age_seconds = 300
   }
 }
-
-
