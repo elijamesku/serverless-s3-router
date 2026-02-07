@@ -1,4 +1,3 @@
-#proj name var
 variable "project" {
   type    = string
   default = "s3-router"
