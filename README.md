@@ -2,7 +2,6 @@
 
 This project implements a serverless pipeline for securely ingesting client files, processing them into a structured S3 layout, archiving prior versions, and exposing them through a CloudFront distribution. It uses Terraform for infrastructure as code, AWS Lambda for file routing, and API Gateway for presigned URL generation
 
-
 ## Architecture
 
 **Key AWS Components:**
