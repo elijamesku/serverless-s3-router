@@ -3,13 +3,11 @@ variable "project" {
   default = "s3-router"
 }
 
-#setting default region var
 variable "region" {
   type    = string
   default = "us-east-2"
 }
 
-#will be changing default to true to run kms later
 variable "kms_sse" {
   type    = bool
   default = false
